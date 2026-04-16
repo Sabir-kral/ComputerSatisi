@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: computer_project
-      MYSQL_ROOT_PASSWORD: !@#$%^&*(123456789sabir
+      MYSQL_ROOT_PASSWORD: '!@#$%^&*(123456789sabir'
     ports:
       - "5000:5000"
     volumes:
