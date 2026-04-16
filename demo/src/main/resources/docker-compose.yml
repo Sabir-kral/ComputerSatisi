@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mcode-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: computer_project
+      MYSQL_ROOT_PASSWORD: !@#$%^&*(123456789sabir
+    ports:
+      - "5000:5000"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Spring Boot Uygulama Servisi
+  app:
+    build: .
+    container_name: mcode-app
+    restart: always
+    ports:
+      - "5050:5050"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:5000/computer_project?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=!@#$%^&*(123456789sabir
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+
+volumes:
+  db_data:
