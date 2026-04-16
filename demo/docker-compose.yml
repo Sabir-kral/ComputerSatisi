@@ -15,7 +15,7 @@ services:
 
   # Spring Boot Uygulama Servisi
   app:
-    build: .
+    build: src/main/java
     container_name: mcode-app
     restart: always
     ports:
