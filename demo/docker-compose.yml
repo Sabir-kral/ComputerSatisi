@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.9"
 
 services:
   db:
@@ -6,27 +6,27 @@ services:
     container_name: mcode-db
     restart: always
     environment:
-      MYSQL_DATABASE: computer_project
-      MYSQL_ROOT_PASSWORD: '!@#$%^&*(123456789sabir'
+      MYSQL_DATABASE: mcode_db
+      MYSQL_ROOT_PASSWORD: sabir123
     ports:
-      - "5000:5000"
-    volumes:
-      - db_data:/var/lib/mysql
+      - "5050:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
 
-  # Spring Boot Uygulama Servisi
   app:
-    build: src/main/java
+    build: .
     container_name: mcode-app
     restart: always
-    ports:
-      - "5050:5050"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:5000/computer_project?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=!@#$%^&*(123456789sabir
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - db
-
-volumes:
-  db_data:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mcode_db?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sabir123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
