@@ -89,7 +89,15 @@ public class SecurityConfig {
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept"
+        ));
+
+        config.setExposedHeaders(List.of(
+                "Authorization"
+        ));
 
         config.setAllowCredentials(true);
 
@@ -98,7 +106,6 @@ public class SecurityConfig {
 
         return source;
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
