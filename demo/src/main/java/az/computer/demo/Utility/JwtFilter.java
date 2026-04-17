@@ -28,23 +28,30 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
+        String path = request.getServletPath();
 
-        String username = null;
-        String jwt = null;
+        // 🔥 LOGIN və SWAGGER SKIP
+        if (path.startsWith("/api/auth") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs")) {
 
-        // 🔥 HEADER YOXDURSA → KEÇ
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authorizationHeader.substring(7);
+        final String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+        String username = null;
 
         try {
-            username = jwtUtil.extractUsername(jwt);
+            username = jwtUtil.extractUsername(token);
         } catch (Exception e) {
-            // 🔥 TOKEN SƏHV → request-i öldürmə
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,24 +60,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            try {
-                if (jwtUtil.validateToken(jwt, userDetails)) {
+            if (jwtUtil.isTokenValid(token, userDetails)) {
 
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            } catch (Exception e) {
-                // 🔥 TOKEN VALIDATION ERROR → ignore
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
