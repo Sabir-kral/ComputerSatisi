@@ -36,21 +36,22 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+
+        http
+                // 🔥 CSRF OFF
+                .csrf(csrf -> csrf.disable())
+
+                // 🔥 CORS ENABLE
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 🔥 AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 Swagger açıq
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 🔓 PUBLIC ENDPOINTS
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers(permitAllUrls).permitAll()
 
-                        // 🔥 OPTIONS (CORS üçün vacib)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // 🔥 SƏNİN COMMENTLƏRİN (UNCOMMENT EDİLDİ)
-                        .requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/customers/**").permitAll()
-
+                        // 🔒 ROLE BASED
                         .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v2").authenticated()
@@ -60,25 +61,34 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
 
-                        .requestMatchers(HttpMethod.POST, "/api/computers/add").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
 
-                        .anyRequest().permitAll()
+                        // 🔒 EVERYTHING ELSE
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .userDetailsService(userDetailsService);
+
+                // 🔥 STATELESS JWT
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 🔥 USER DETAILS + PASSWORD
+                .userDetailsService(userDetailsService)
+                .authenticationProvider(authenticationProvider());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔥 CORS CONFIG (Cloud Shell əlavə edildi)
+    // 🔥 CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
@@ -88,17 +98,7 @@ public class SecurityConfig {
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        config.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Accept"
-        ));
-
-        config.setExposedHeaders(List.of(
-                "Authorization"
-        ));
-
+        config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -106,13 +106,35 @@ public class SecurityConfig {
 
         return source;
     }
+
+    // 🔥 AUTH PROVIDER
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+    public AuthenticationProvider authenticationProvider() {
+
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    static String[] permitAllUrls = {
+            "/v2/api-docs",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-resources",
+            "/swagger-resources/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
 }
