@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,16 +40,23 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable())
+                )
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ AUTH TAM AÇIQ
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
 
-                        // ✅ SWAGGER
-                        .requestMatchers(permitAllUrls).permitAll()
-
-                        // ✅ CUSTOMER
-                        .requestMatchers(HttpMethod.POST, "/api/customers/**").permitAll() // 🔥 REGISTER üçün vacibdir
+                        .requestMatchers("/api/users/verify").permitAll()
+                        .requestMatchers("/api/users/resendOTP").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
@@ -61,12 +67,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
 
-                        // ✅ COMPUTER
                         .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
 
-                        // ✅ ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated()
@@ -74,24 +78,23 @@ public class SecurityConfig {
 
                 .sessionManagement(sess ->
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                .userDetailsService(userDetailsService);
+                );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔥 ƏN VACİB HİSSƏ (CORS)
+    // 🔥 FULL OPEN CORS (CloudShell üçün)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("*")); // 🔥 BURANI BELƏ ET
-        config.setAllowedMethods(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -99,6 +102,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -119,10 +123,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    static String[] permitAllUrls = {
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html"
-    };
 }
