@@ -38,54 +38,34 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔥 CSRF OFF
                 .csrf(csrf -> csrf.disable())
-
-                // 🔥 CORS ENABLE
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 🔥 AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 PUBLIC ENDPOINTS
-                        .requestMatchers("/api/auth/login").permitAll()
+                        // 🔓 PUBLIC
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(permitAllUrls).permitAll()
 
                         // 🔒 ROLE BASED
-                        .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v2").authenticated()
-
-                        .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
                         // 🔒 EVERYTHING ELSE
                         .anyRequest().authenticated()
                 )
 
-                // 🔥 STATELESS JWT
                 .sessionManagement(sess ->
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🔥 USER DETAILS + PASSWORD
-                .userDetailsService(userDetailsService)
-                .authenticationProvider(authenticationProvider());
+                .userDetailsService(userDetailsService);
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔥 CORS CONFIG
+    // 🔥 CORS FULL FIX
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -97,7 +77,7 @@ public class SecurityConfig {
                 "https://8080-cs-cd73c805-74e7-4b92-ab0b-47e3eb1b4c29.cs-europe-west4-fycr.cloudshell.dev"
         ));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
@@ -107,7 +87,6 @@ public class SecurityConfig {
         return source;
     }
 
-    // 🔥 AUTH PROVIDER
     @Bean
     public AuthenticationProvider authenticationProvider() {
 
@@ -119,21 +98,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
     static String[] permitAllUrls = {
-            "/v2/api-docs",
-            "/v3/api-docs",
             "/v3/api-docs/**",
-            "/swagger-resources",
-            "/swagger-resources/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
     };
