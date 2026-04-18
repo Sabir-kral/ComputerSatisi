@@ -14,36 +14,45 @@ public class JwtUtil {
     @Value("${application.jwt.spring.token}")
     private String SECRET_KEY;
 
-    private final long EXPIRATION = 1000L * 60 * 60 * 24; // 1 gün
+    private final long ACCESS_EXPIRATION = 1000 * 60 * 60 * 24 * 365;
+    private final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 30;
 
-    // 🔥 TOKEN GENERATE
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("type", "ACCESS")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
-                .compact();
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
+                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()),
+                        SignatureAlgorithm.HS256).compact();
     }
 
-    // 🔥 USERNAME EXTRACT
+    public String generateRefreshToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .claim("type", "REFRESH")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
+                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()),
+                        SignatureAlgorithm.HS256).compact();
+    }
+
+    public boolean validateToken(String token, UserDetails userDetails) {
+        return extractUsername(token).equals(userDetails.getUsername())
+                && !getClaims(token).getExpiration().before(new Date());
+    }
+
     public String extractUsername(String token) {
         return getClaims(token).getSubject();
     }
 
-    // 🔥 VALIDATE
-    public boolean validateToken(String token, UserDetails userDetails) {
-        return extractUsername(token).equals(userDetails.getUsername())
-                && !isExpired(token);
+    public String extractTokenType(String token) {
+        return getClaims(token).get("type", String.class);
     }
 
-    private boolean isExpired(String token) {
-        return getClaims(token).getExpiration().before(new Date());
-    }
-
-    private Claims getClaims(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
+                .setSigningKey(SECRET_KEY.getBytes())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

@@ -43,14 +43,22 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 PUBLIC
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(permitAllUrls).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/v2").authenticated()
 
-                        // 🔒 ROLE BASED
-                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
 
-                        // 🔒 EVERYTHING ELSE
+                        .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
 
@@ -65,7 +73,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔥 CORS FULL FIX
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 

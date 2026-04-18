@@ -1,14 +1,11 @@
 package az.computer.demo.Controller;
 
 import az.computer.demo.Entity.UserEntity;
-import az.computer.demo.Exception.CustomException;
 import az.computer.demo.Repo.UserRepo;
 import az.computer.demo.Request.LoginRequest;
 import az.computer.demo.Response.LoginResponse;
 import az.computer.demo.Service.CustomUserDetailsService;
-import az.computer.demo.Service.LogService;
 import az.computer.demo.Utility.JwtUtil;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,24 +16,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final UserRepo userRepo;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@RequestBody LoginRequest request) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    request.getEmail(),
+                    request.getPassword()
+            ));
+        }catch (BadCredentialsException e) {
+            throw new RuntimeException("Daxil edilen melumatlar yanlisdir");
+        }
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
+        UserEntity userEntity = userRepo.findByEmail(request.getEmail()).orElseThrow(()->new RuntimeException("Not Found"));
+        String accessToken = jwtUtil.generateAccessToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-
-        return jwtUtil.generateToken(userDetails);
+        return new LoginResponse(userEntity.getId(),request.getEmail(),accessToken);
     }
 }

@@ -26,10 +26,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .toList();
 
-        return new User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
-        );
+        return User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .authorities(authorities)
+                .build();
     }
 }
