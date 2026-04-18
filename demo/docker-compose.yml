@@ -5,13 +5,17 @@ services:
     image: mysql:8.0
     container_name: mcode-db
     restart: always
+
     environment:
       MYSQL_DATABASE: mcode_db
       MYSQL_ROOT_PASSWORD: sabir123
+
     ports:
       - "5050:3306"
+
     volumes:
-      - mysql_data:/var/lib/mysql   # 🔥 ƏN VACİB HİSSƏ
+      - mysql_data:/var/lib/mysql   # ✅ DB silinməsin deyə
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -21,17 +25,21 @@ services:
     build: .
     container_name: mcode-app
     restart: always
+
     depends_on:
       db:
         condition: service_healthy
+
     ports:
       - "8080:8080"
+
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mcode_db?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: sabir123
+
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
 
 volumes:
-  mysql_data:   # 🔥 BU DA ŞƏRTLƏR
+  mysql_data:

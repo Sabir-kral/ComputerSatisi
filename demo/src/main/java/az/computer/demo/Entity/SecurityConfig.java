@@ -43,8 +43,15 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // ✅ AUTH TAM AÇIQ
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // ✅ SWAGGER
                         .requestMatchers(permitAllUrls).permitAll()
+
+                        // ✅ CUSTOMER
+                        .requestMatchers(HttpMethod.POST, "/api/customers/**").permitAll() // 🔥 REGISTER üçün vacibdir
+
                         .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v2").authenticated()
@@ -54,11 +61,14 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
 
+                        // ✅ COMPUTER
                         .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
 
+                        // ✅ ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
+
                         .anyRequest().authenticated()
                 )
 
@@ -73,18 +83,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // 🔥 ƏN VACİB HİSSƏ (CORS)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://127.0.0.1:5500",
-                "http://localhost:5500",
-                "https://8080-cs-cd73c805-74e7-4b92-ab0b-47e3eb1b4c29.cs-europe-west4-fycr.cloudshell.dev"
-        ));
-
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedOriginPatterns(List.of("*")); // 🔥 BURANI BELƏ ET
+        config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
