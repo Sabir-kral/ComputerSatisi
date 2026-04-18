@@ -25,9 +25,14 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
-            filterChain.doFilter(request, response);
-            return;
+// JwtFilter.java daxilində
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+            response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,DELETE,PUT");
+            response.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setStatus(HttpServletResponse.SC_OK);
+            return; // DİQQƏT: filterChain-ə keçmə, burada bitir!
         }
         final String authorizationHeader = request.getHeader("Authorization");
 

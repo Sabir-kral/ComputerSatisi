@@ -39,45 +39,43 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable())
-                )
-
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
+                        // 1. Pre-flight sorğuları (CORS üçün mütləqdir)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // 2. Swagger və API sənədləşməsi
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/users/verify").permitAll()
-                        .requestMatchers("/api/users/resendOTP").permitAll()
+                        // 3. İctimai (Public) Endpoint-lər - Qeydiyyat və Giriş
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/").permitAll() // ✅ 403 həlli
+                        .requestMatchers("/api/users/verify", "/api/users/resendOTP").permitAll()
 
+                        // 4. Test üçün Computers endpoint-lərini açmısan (Ehtiyac yoxdursa hasRole qoyarsan)
+                        .requestMatchers(HttpMethod.POST, "/api/computers/add").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").permitAll()
+
+                        // 5. Avtorizasiya tələb edən endpoint-lər
                         .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v1").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v2").authenticated()
-
+                        .requestMatchers(HttpMethod.GET, "/api/customers/v1", "/api/customers/v2").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
-
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
 
-                        .requestMatchers(HttpMethod.POST, "/api/computers/add").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").hasAuthority("ROLE_ADMIN")
-
+                        // 6. Admin yolları
                         .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
 
+                        // 7. Qalan hər şey
                         .anyRequest().authenticated()
-                )
-
-                .sessionManagement(sess ->
-                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -85,32 +83,30 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔥 FULL OPEN CORS (CloudShell üçün)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
 
+        // CloudShell-də mütləq "*" yerinə "OriginPatterns" istifadə etməliyik
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // ⚠️ ÇOX VACİB: CloudShell-in sildiyi header-ləri bura mütləq yaz!
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
 
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization")); // Brauzer tokeni görə bilsin
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 
-
     @Bean
     public AuthenticationProvider authenticationProvider() {
-
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
-
         return provider;
     }
 
