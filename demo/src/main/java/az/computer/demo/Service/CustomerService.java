@@ -93,29 +93,38 @@ public class CustomerService {
 
     @Transactional
     public MessageResponse buyComputer(Long computerId) {
-
+        // 1. Alıcını tapırıq
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        CustomerEntity customer = customerRepo.findByEmail(email)
+        CustomerEntity buyer = customerRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
+        // 2. Kompüteri tapırıq
         ComputerEntity computer = computerRepo.findById(computerId)
                 .orElseThrow(() -> new RuntimeException("Computer not found"));
 
-        if (customer.getBoughtComputers().contains(computer)) {
-            throw new RuntimeException("Already bought this computer");
+        // 3. Təhlükəsizlik yoxlaması: Alıcı bu kompüteri artıq alıbmı?
+        if (buyer.getBoughtComputers().contains(computer)) {
+            throw new RuntimeException("Siz bu kompüteri artıq almısınız.");
         }
 
-        customer.getBoughtComputers().add(computer);
+        // 4. ƏSAS MƏNTİQ: Bu kompüteri satan hər kəsin siyahısından onu silirik
+        // ManyToMany olduğu üçün 'sellers' siyahısını döngü ilə təmizləyirik
+        if (computer.getSellers() != null && !computer.getSellers().isEmpty()) {
+            for (CustomerEntity seller : computer.getSellers()) {
+                seller.getSellingComputers().remove(computer);
+                // Satıcıları yadda saxlayırıq ki, əlaqə cədvəli (customer_computers) yenilənsin
+                customerRepo.save(seller);
+            }
+        }
 
-        customer.getSellingComputers().remove(computer);
+        // 5. Kompüteri alıcının 'boughtComputers' siyahısına əlavə edirik
+        buyer.getBoughtComputers().add(computer);
+        customerRepo.save(buyer);
 
-        customerRepo.save(customer);
-
+        // 6. Loq və Cavab
         MessageResponse response = new MessageResponse();
-        response.setMessage("Computer bought successfully");
-        logService.add("Customer bought pc with email: "+customer.getEmail(),"CUSTOMER_BOUGHT");
-
+        response.setMessage("Computer bought successfully and removed from all selling lists.");
+        logService.add("Customer " + buyer.getEmail() + " bought PC ID: " + computerId, "CUSTOMER_BOUGHT");
 
         return response;
     }
@@ -183,9 +192,15 @@ public class CustomerService {
 
 
     }
-    public List<ComputerResponse> getAll(){
-        return ComputerMapper.toDTOList(computerRepo.findAll());
+    public List<ComputerResponse> getAll() {
+        List<ComputerEntity> allComputers = computerRepo.findAll();
 
+        // Yalnız satıcısı olan (yəni hələ də satışda olan) kompüterləri göstər
+        List<ComputerEntity> availableComputers = allComputers.stream()
+                .filter(c -> c.getSellers() != null && !c.getSellers().isEmpty())
+                .toList();
+
+        return ComputerMapper.toDTOList(availableComputers);
     }
 
 }

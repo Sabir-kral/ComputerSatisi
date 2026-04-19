@@ -14,7 +14,7 @@ public class JwtUtil {
     @Value("${application.jwt.spring.token}")
     private String SECRET_KEY;
 
-    private final long ACCESS_EXPIRATION = 1000 * 60 * 60 * 24 * 365;
+    private final long ACCESS_EXPIRATION = 1000L * 60 * 60 * 24 * 365;
     private final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 30;
 
     public String generateAccessToken(UserDetails userDetails) {
