@@ -1,45 +1,42 @@
-version: "3.9"
+version: '3.8'
 
 services:
   db:
     image: mysql:8.0
-    container_name: mcode-db
+    container_name: pc-store-db
     restart: always
-
     environment:
-      MYSQL_DATABASE: mcode_db
-      MYSQL_ROOT_PASSWORD: sabir123
-
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5050:3306"
-
+      - "${DB_PORT}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql   # ✅ DB silinməsin deyə
-
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  app:
+  backend:
     build: .
-    container_name: mcode-app
+    container_name: pc-store-backend
     restart: always
-
+    ports:
+      - "${SERVER_PORT}:8080"
     depends_on:
       db:
         condition: service_healthy
-
-    ports:
-      - "8080:8080"
-
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mcode_db?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: sabir123
-
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
+      - SPRING_SQL_INIT_MODE=always
+      - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
+      # Əgər kodunda JWT secret üçün @Value("${jwt.secret}") istifadə edirsənsə:
+      - JWT_SECRET=${JWT_SECRET}
 
 volumes:
   mysql_data:
