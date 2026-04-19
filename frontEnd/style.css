@@ -1,0 +1,141 @@
+:root {
+    --primary-color: #00d2ff;
+    --accent-color: #3a7bd5;
+    --bg-dark: #0f0f12;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --text-main: #e0e0e0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+/* Arxa fondakı dumanlı işıq effekti */
+.background-glow {
+    position: fixed;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, transparent 70%);
+    z-index: -1;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 30px 8%;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.logo span { color: var(--primary-color); }
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    margin-left: 30px;
+    font-weight: 300;
+    transition: 0.3s;
+}
+
+.menu a:hover { color: var(--primary-color); }
+
+.main-title {
+    text-align: center;
+    padding: 60px 0;
+}
+
+#top-title {
+    font-size: 8rem;
+    font-weight: 900;
+    background: linear-gradient(to bottom, #fff 30%, #444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -5px;
+    opacity: 0.8;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+/* Kompüter Kartları */
+.pc-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pc-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 30px rgba(0, 210, 255, 0.1);
+}
+
+.pc-card i {
+    font-size: 40px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.pc-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.pc-card p {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.pc-card .price {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.buy-btn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: var(--primary-color);
+    color: #000;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.buy-btn:hover { background: white; }

@@ -66,7 +66,7 @@ public class SecurityConfig {
 
                         // 5. Avtorizasiya tələb edən endpoint-lər
                         .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v1", "/api/customers/v2").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/v1", "/api/customers/v2").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
