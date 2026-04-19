@@ -37,15 +37,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // POST sorğuları üçün mütləqdir
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Pre-flight sorğuları (CORS üçün mütləqdir)
+                        // 1. Pre-flight sorğuları (Brauzerin yoxlama sorğuları üçün)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Swagger və API sənədləşməsi
+                        // 2. Swagger və API sənədləşməsi (Açıq)
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -54,33 +54,26 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // 3. İctimai (Public) Endpoint-lər - Qeydiyyat və Giriş
+                        // 3. İctimai (Public) Endpoint-lər - Qeydiyyat, Giriş və Kompüterlər
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/").permitAll() // ✅ 403 həlli
-                        .requestMatchers(HttpMethod.GET, "/api/customers/v1", "/api/customers/v2").permitAll()
-                        .requestMatchers("/api/users/verify", "/api/users/resendOTP").permitAll()
+                        .requestMatchers("/api/users/**").permitAll()
+                        .requestMatchers("/api/customers/**").permitAll() // v1, v2 və digər bütün müştəri yolları
+                        .requestMatchers("/api/computers/**").permitAll() // Frontend-də kompüterlərin görünməsi üçün
+                        .requestMatchers("/api/admins/**").permitAll() // Admin yaradılması üçün hələlik açıq
 
-                        // 4. Test üçün Computers endpoint-lərini açmısan (Ehtiyac yoxdursa hasRole qoyarsan)
-                        .requestMatchers(HttpMethod.POST, "/api/computers/add").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/computers/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/computers/**").permitAll()
+                        // 4. Avtorizasiya tələb edən xüsusi profil işləri
+                        .requestMatchers("/api/customers/profile/**").authenticated()
+                        .requestMatchers("/api/customers/buy/**").authenticated()
+                        .requestMatchers("/api/customers/delete/**").authenticated()
 
-                        // 5. Avtorizasiya tələb edən endpoint-lər
-                        .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/admins/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/admins/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/admins/**").authenticated()
+                        // 5. Admin paneli üçün xüsusi icazə (Məsələn loglar üçün)
+                        .requestMatchers("/api/logs/**").hasAuthority("ROLE_ADMIN")
 
-                        // 6. Admin yolları
-                        .requestMatchers(HttpMethod.GET, "/api/logs/v1").hasAuthority("ROLE_ADMIN")
-
-                        // 7. Qalan hər şey
+                        // 6. Qalan hər şey
                         .anyRequest().authenticated()
                 );
 
+        // JWT Filtrini əlavə edirik
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -89,9 +82,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // Hər yerə icazə
+
+        // Frontend-in backend-ə qoşulması üçün tam sərbəstlik veririk
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*")); // Bütün header-lərə icazə
+        config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         config.setExposedHeaders(List.of("Authorization"));
 

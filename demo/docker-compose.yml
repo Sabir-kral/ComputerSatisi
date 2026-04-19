@@ -11,7 +11,7 @@ services:
     ports:
       - "${DB_PORT}:3306"
     volumes:
-      - ./mysql_data_folder:/var/lib/mysql
+      - ./mysql_data_folder:/var/lib/mysql # Bu hissə mütləq qalmalıdır
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -31,10 +31,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
-      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update  # İlk build-də update saxla, sonra none edərsən
       - SPRING_SQL_INIT_MODE=never
-      - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
       - JWT_SECRET=${JWT_SECRET}
-
-# ƏN AŞAĞIDAKI volumes HİSSƏSİNİ TAMAMİLƏ SİLDİK
