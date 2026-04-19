@@ -11,7 +11,9 @@ services:
     ports:
       - "${DB_PORT}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      # BU HİSSƏDƏ DƏYİŞİKLİK ETDİK:
+      # Cari qovluqda 'mysql_data_folder' adlı real qovluq yaradacaq
+      - ./mysql_data_folder:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -35,8 +37,6 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
       - SPRING_SQL_INIT_MODE=always
       - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
-      # Əgər kodunda JWT secret üçün @Value("${jwt.secret}") istifadə edirsənsə:
       - JWT_SECRET=${JWT_SECRET}
 
-volumes:
-  mysql_data:
+# ƏN AŞAĞIDAKI volumes HİSSƏSİNİ TAMAMİLƏ SİLDİK
