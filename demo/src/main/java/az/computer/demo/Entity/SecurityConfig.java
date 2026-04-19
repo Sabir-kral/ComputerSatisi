@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/customers/buy/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/admins/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/admins/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/admins/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/admins/**").authenticated()
 
