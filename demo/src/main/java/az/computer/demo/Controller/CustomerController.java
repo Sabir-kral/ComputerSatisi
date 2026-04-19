@@ -5,6 +5,7 @@ import az.computer.demo.Response.ComputerResponse;
 import az.computer.demo.Response.CustomerResponse;
 import az.computer.demo.Response.MessageResponse;
 import az.computer.demo.Service.CustomerService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/customers")
+@CrossOrigin(origins = "*")
+
 public class CustomerController {
 
     private final CustomerService service;
@@ -39,10 +42,12 @@ public class CustomerController {
         return service.profile();
     }
     @GetMapping("/v1")
+    @Operation(summary = "Get bought pc")
     public List<ComputerResponse> getAllBought(){
         return service.getAllBought();
     }
     @GetMapping("/v2")
+    @Operation(summary = "Get all pc")
     public List<ComputerResponse> getAll(){
         return service.getAll();
     }

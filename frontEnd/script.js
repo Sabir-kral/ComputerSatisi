@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchComputers() {
         try {
             // Endpoint-i öz backend-inə uyğun olaraq dəyiş (məsələn: /api/computers)
-            const response = await fetch('http://localhost:8080/api/customers/v2');
+            const response = await fetch('http://localhost:8080/api/customers/v1');
             
             if (!response.ok) {
                 throw new Error("Məlumat alına bilmədi");
