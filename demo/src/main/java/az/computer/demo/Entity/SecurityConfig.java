@@ -41,20 +41,17 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Bütün OPTIONS (pre-flight) sorğularına icazə ver
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Swagger və API sənədləşməsi
+                        // Açıq yollar (Frontend üçün)
+                        .requestMatchers("/api/auth/**", "/api/users/**").permitAll()
+                        .requestMatchers("/api/computers/**").permitAll()
+                        .requestMatchers("/api/customers/**").permitAll() // BU BÜTÜN v1/v2-ləri əhatə edir
+
+                        // Swagger
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Bütün API-ları test və frontend üçün müvəqqəti tam açırıq
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/customers/**").permitAll()
-                        .requestMatchers("/api/computers/**").permitAll()
-                        .requestMatchers("/api/admins/**").permitAll()
-
-                        // Qalan hər şey
+                        // Digər hər şey bağlıdır
                         .anyRequest().authenticated()
                 );
 
