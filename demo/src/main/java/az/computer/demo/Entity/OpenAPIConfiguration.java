@@ -12,11 +12,15 @@ import io.swagger.v3.oas.annotations.servers.Server;
         info = @Info(
                 title = "Computer Demo API",
                 version = "1.0",
-                description = "JWT Auth and CloudShell HTTPS Fix"
+                description = "JWT Auth and Local Server Fix"
         ),
         servers = {
                 @Server(
-                        description = "CloudShell Server",
+                        description = "Local VirtualBox Server",
+                        url = "http://localhost:8080"
+                ),
+                @Server(
+                        description = "CloudShell Server (Optional)",
                         url = "https://8080-cs-cd73c805-74e7-4b92-ab0b-47e3eb1b4c29.cs-europe-west4-fycr.cloudshell.dev"
                 )
         },

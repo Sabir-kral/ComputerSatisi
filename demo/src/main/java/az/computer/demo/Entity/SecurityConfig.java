@@ -86,16 +86,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // CloudShell-də mütləq "*" yerinə "OriginPatterns" istifadə etməliyik
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("*")); // Hər yerə icazə
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // ⚠️ ÇOX VACİB: CloudShell-in sildiyi header-ləri bura mütləq yaz!
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
-
+        config.setAllowedHeaders(List.of("*")); // Bütün header-lərə icazə
         config.setAllowCredentials(true);
-        config.setExposedHeaders(List.of("Authorization")); // Brauzer tokeni görə bilsin
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
