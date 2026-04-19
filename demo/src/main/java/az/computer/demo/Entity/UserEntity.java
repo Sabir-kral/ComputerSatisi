@@ -31,6 +31,8 @@ public class UserEntity {
     @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE)
     private CustomerEntity customer;
 
+    @OneToOne(mappedBy = "user",cascade = CascadeType.REMOVE)
+    private AdminEntity admin;
 
     private Boolean isVerified;
 
