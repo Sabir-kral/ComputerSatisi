@@ -11,8 +11,6 @@ services:
     ports:
       - "${DB_PORT}:3306"
     volumes:
-      # BU HİSSƏDƏ DƏYİŞİKLİK ETDİK:
-      # Cari qovluqda 'mysql_data_folder' adlı real qovluq yaradacaq
       - ./mysql_data_folder:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
