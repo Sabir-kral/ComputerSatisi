@@ -24,13 +24,10 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String path = request.getServletPath();
 
-        // 1. CORS Pre-flight (OPTIONS) - Heç bir filtrə girmədən birbaşa OK qaytar
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setHeader("Access-Control-Allow-Origin", "*");
-            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, X-Requested-With, Origin");
-            response.setStatus(HttpServletResponse.SC_OK);
+        if (path.contains("/api/auth/") || path.contains("/v1") || path.contains("/v2") || path.contains("/computers")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
