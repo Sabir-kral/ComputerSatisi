@@ -3,23 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC Store | Computers</title>
+    <title>TechStore | Kompüter Satışı</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">PC<span>STORE</span></div>
-    </nav>
 
-    <div class="header-section">
-        <h1>COMPUTERS</h1>
-    </div>
-
-    <div class="container">
-        <div id="pc-grid" class="pc-grid">
+    <header>
+        <div class="navbar">
+            <h1 class="logo">TECH<span>STORE</span></h1>
+            <div class="auth-buttons">
+                <a href="login.html" class="btn-login">Giriş</a>
             </div>
-    </div>
+        </div>
+
+        <div class="search-container">
+            <h2>Xəyalındakı Kompüteri Tap</h2>
+            <div class="search-box">
+                <input type="number" id="search-id" placeholder="ID ilə axtar (məs: 5)...">
+                <button onclick="handleSearch()">Axtar</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div id="pc-grid">
+            <div class="loading">Məlumatlar yüklənir...</div>
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
-</html> 
+</html>

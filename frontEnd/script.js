@@ -1,48 +1,44 @@
 const PC_CONTAINER = document.getElementById('pc-grid');
+const API_BASE = 'http://localhost:8080/api'; // Əgər işləməsə buranı Server IP-si ilə dəyiş
 
 async function getComputers() {
     try {
-        // BURANI ÖZ SERVER IP-NƏ GÖRƏ DƏYİŞ!
-        const response = await fetch('http://localhost:8080/api/customers/v2', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await fetch(`${API_BASE}/customers/v2`);
 
-        if (!response.ok) throw new Error('403 və ya Server Xətası');
+        if (!response.ok) throw new Error('Məlumatları gətirmək mümkün olmadı');
 
         const data = await response.json();
         PC_CONTAINER.innerHTML = '';
 
         data.forEach(pc => {
+            // Hər karta onclick="findComputerById(${pc.id})" əlavə edirik
             PC_CONTAINER.innerHTML += `
-                <div class="card">
+                <div class="card" onclick="findComputerById(${pc.id})">
+                    <div class="card-badge">ID: ${pc.id}</div>
                     <h3>${pc.name}</h3>
-                    <p>${pc.description || 'Yüksək Keyfiyyət'}</p>
+                    <p>${pc.description || 'Texniki göstəricilər üçün klikləyin'}</p>
                     <div class="price">${pc.price} AZN</div>
                 </div>
             `;
         });
     } catch (err) {
-        PC_CONTAINER.innerHTML = `<p style="color:red">Xəta: ${err.message}</p>`;
+        console.error(err);
+        PC_CONTAINER.innerHTML = `<p style="color:red; text-align:center;">Xəta: ${err.message}</p>`;
     }
 }
 
-getComputers();
-
 async function findComputerById(id) {
+    console.log("Axtarılan ID:", id); // Console-da yoxlamaq üçün
     const token = localStorage.getItem('accessToken');
 
-    // Əgər token yoxdursa, backend-ə getmədən xəbərdarlıq edirik
     if (!token) {
-        alert("Bu funksiya üçün əvvəlcə login olmalısınız!");
-        window.location.href = "/login.html"; // Login səhifəsinə yönləndir
+        alert("Bu kompüterin detallarına baxmaq üçün əvvəlcə login olmalısınız!");
+        window.location.href = "login.html";
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/computers/${id}`, {
+        const response = await fetch(`${API_BASE}/computers/${id}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -51,22 +47,31 @@ async function findComputerById(id) {
         });
 
         if (response.status === 403 || response.status === 401) {
-            throw new Error('Zəhmət olmasa login olun!');
+            throw new Error('Sizin bu məlumata giriş icazəniz yoxdur (403 Forbidden)');
         }
 
         if (!response.ok) throw new Error('Kompüter tapılmadı!');
 
         const pc = await response.json();
-        // Ekranda yalnız həmin kompüteri göstər
+        
+        // Detallı görünüş
         PC_CONTAINER.innerHTML = `
-            <div class="card" style="border-color: var(--primary-blue); grid-column: 1/-1;">
-                <button onclick="getComputers()">Geri qayıt</button>
-                <h3>${pc.name}</h3>
-                <p>${pc.description}</p>
-                <div class="price">${pc.price} AZN</div>
+            <div class="card detail-view" style="grid-column: 1/-1;">
+                <button class="btn-back" onclick="getComputers()">← Geri qayıt</button>
+                <div class="detail-content">
+                    <h2>${pc.name}</h2>
+                    <hr>
+                    <p><strong>Təsvir:</strong> ${pc.description}</p>
+                    <div class="price">Qiymət: ${pc.price} AZN</div>
+                    <button class="btn-buy" onclick="buyPC(${pc.id})">İndi Al</button>
+                </div>
             </div>
         `;
     } catch (err) {
+        console.error("Xəta baş verdi:", err);
         alert(err.message);
     }
 }
+
+// Səhifə yüklənəndə kompüterləri gətir
+getComputers();

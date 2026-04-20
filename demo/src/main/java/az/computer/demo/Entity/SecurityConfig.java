@@ -50,6 +50,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/customers/v2").permitAll()
 
                         .requestMatchers("/api/customers/profile").authenticated()
+                        .requestMatchers("/api/customers/**").permitAll()
+                        .requestMatchers("/api/customers/delete").permitAll()
+                        .requestMatchers("/api/customers/buy/**").authenticated()
                         // SecurityConfig.java
                         .requestMatchers(HttpMethod.GET, "/api/computers/{id}").authenticated()
                         .anyRequest().authenticated()
