@@ -1,5 +1,6 @@
 package az.computer.demo.Exception;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,13 +13,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class MyHandler {
     @ExceptionHandler(CustomException.class)
-    public Map<String, Object> handleCustomException(CustomException ex) {
+    public ResponseEntity<Map<String, Object>> handleCustomException(CustomException ex) {
         Map<String, Object> map = new HashMap<>();
         map.put("message", ex.getMessage());
         map.put("error", ex.getError());
         map.put("status", ex.getStatus());
 
-        return map;
+        // İndi brauzer bunu real xəta (məsələn 400) kimi görəcək
+        return ResponseEntity.status(ex.getStatus()).body(map);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

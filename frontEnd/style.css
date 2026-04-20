@@ -143,3 +143,8 @@ body {
         border-right: 1px solid #30363d;
     }
 }
+.card {
+    cursor: pointer;
+    position: relative;
+    z-index: 1; /* Digər elementlərin altında qalmasın */
+}

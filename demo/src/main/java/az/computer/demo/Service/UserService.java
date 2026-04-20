@@ -76,19 +76,20 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException("User not found", "Not Found", 404));
 
-        if (user.getIsVerified() != null && user.getIsVerified()) {
-            throw new CustomException("User already verified", "Bad Request", 400);
-        }
+        // Köhnə kodları təmizlə ki, həm baza dolmasın, həm də 'unique' xətası olmasın
+        emailVerificationRepository.findByEmail(request.getEmail()).ifPresent(emailVerificationRepository::delete);
 
         String code = generateCode();
         EmailVerificationEntity entity = new EmailVerificationEntity();
         entity.setEmail(request.getEmail());
         entity.setUser(user);
         entity.setToken(code);
-        entity.setExpirationDate(LocalDateTime.now().plusMinutes(5));
+        entity.setExpirationDate(LocalDateTime.now().plusMinutes(2)); // Mail-də 2 dəqiqə demisən, bura da 2 et
         emailVerificationRepository.save(entity);
 
         mailService.verifyEmail(request.getEmail(), code);
+        // ... qalan kodlar
+    
 
         MessageResponse response = new MessageResponse();
         response.setMessage("OTP resend olundu");
