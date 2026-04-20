@@ -1,36 +1,54 @@
 version: '3.8'
 
 services:
+  # --- VERİLƏNLƏR BAZASI ---
   db:
     image: mysql:8.0
     container_name: pc-store-db
     restart: always
+    env_file: .env
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     ports:
-      - "${DB_PORT}:3306"
+      - "3306:3306" # Həm server, həm lokal (IntelliJ) girişi üçün
     volumes:
-      - ./mysql_data_folder:/var/lib/mysql # Bu hissə mütləq qalmalıdır
+      - ./mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # --- BACKEND (SPRING BOOT) ---
   backend:
     build: .
     container_name: pc-store-backend
-    restart: always
     ports:
-      - "${SERVER_PORT}:8080"
+      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+    env_file: .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
-      - SPRING_DATASOURCE_USERNAME=${DB_USER}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update  # İlk build-də update saxla, sonra none edərsən
-      - SPRING_SQL_INIT_MODE=never
+      # Docker daxilində bazaya "db" adı ilə qoşulur
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+
+  # --- FRONTEND (REACT/VUE/NEXT) ---
+  frontend:
+    # Qovluq demo-nun yanında olduğu üçün bir addım geri (..) çıxırıq
+    build: ../frontEnd
+    container_name: pc-store-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+
+networks:
+  default:
+    name: pc-store-network
