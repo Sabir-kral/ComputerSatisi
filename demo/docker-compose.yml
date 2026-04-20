@@ -11,7 +11,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3306:3306" # Həm server, həm lokal (IntelliJ) girişi üçün
+      - "3306:3306"
     volumes:
       - ./mysql_data:/var/lib/mysql
     healthcheck:
@@ -31,23 +31,20 @@ services:
         condition: service_healthy
     env_file: .env
     environment:
-      # Docker daxilində bazaya "db" adı ilə qoşulur
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
 
-  # --- FRONTEND (REACT/VUE/NEXT) ---
+  # --- FRONTEND (HTML/CSS/JS) ---
   frontend:
-    # Qovluq demo-nun yanında olduğu üçün bir addım geri (..) çıxırıq
     build: ../frontEnd
     container_name: pc-store-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"  # Brauzerdə yenə 3000 yazacaqsan, amma daxildə Nginx 80 ilə işləyir
     depends_on:
       - backend
-    environment:
-      - NODE_ENV=production
+    # Sadə HTML üçün environment: NODE_ENV ehtiyac deyil, sildim ki, sürətli olsun
 
 networks:
   default:
