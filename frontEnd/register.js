@@ -14,8 +14,8 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         });
 
         if (response.ok) {
-            alert("Qeydiyyat uğurludur! İndi giriş edə bilərsiniz.");
-            window.location.href = "login.html";
+            alert("Qeydiyyat uğurludur! İndi gmaile kod gelecek o kodu yazaraq giris edə bilərsiniz.");
+            window.location.href = "verify.html";
         } else {
             const errorData = await response.json();
             alert("Xəta: " + (errorData.message || "Bu email artıq istifadə olunub!"));

@@ -49,7 +49,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/computers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/customers/v2").permitAll()
 
-                        .requestMatchers("/api/customers/profile").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/customers/profile").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/delete").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/profile").authenticated()
                         .requestMatchers("/api/customers/**").permitAll()
                         .requestMatchers("/api/customers/delete").permitAll()
                         .requestMatchers("/api/customers/buy/**").authenticated()

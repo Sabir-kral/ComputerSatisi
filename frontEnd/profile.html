@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Profilim | TechStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin: 50px auto; padding: 20px;">
+        <div class="card">
+            <h2>İstifadəçi Profili</h2>
+            <div id="profile-view">
+                <p><strong>Ad:</strong> <span id="view-name">...</span></p>
+                <p><strong>Soyad:</strong> <span id="view-surname">...</span></p>
+                <p><strong>Email:</strong> <span id="view-email">...</span></p>
+                <div style="display:flex; gap:10px; flex-direction: column;">
+                    <button class="btn-blue" onclick="showUpdate()">Məlumatları Yenilə</button>
+                    <button class="btn-blue" style="background:#49fb35" onclick="location.href='add-computer.html'">Kompüter Əlavə Et +</button>
+                    <button class="btn-danger" onclick="logout()">Çıxış Et (Logout)</button>
+                    <button class="btn-danger" style="background:#555" onclick="deleteAccount()">Hesabı Sil</button>
+                </div>
+            </div>
+
+            <div id="update-form" style="display:none;">
+                <h3>Məlumatları Redaktə Et</h3>
+                <input type="text" id="up-name" class="input-field" placeholder="Ad"><br><br>
+                <input type="text" id="up-surname" class="input-field" placeholder="Soyad"><br><br>
+                <input type="password" id="up-pass" class="input-field" placeholder="Yeni Şifrə (Köhnə qala bilər)"><br><br>
+                <button class="btn-blue" onclick="processUpdate()">Yadda Saxla</button>
+                <button class="btn-danger" onclick="location.reload()">Ləğv Et</button>
+            </div>
+        </div>
+    </div>
+    <script src="profile.js"></script>
+</body>
+</html>

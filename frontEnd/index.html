@@ -2,34 +2,26 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Kompüter Satışı</title>
+    <title>TechStore | Ana Səhifə</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <div class="navbar">
-            <h1 class="logo">TECH<span>STORE</span></h1>
-            <div class="auth-buttons">
-                <a href="login.html" class="btn-login">Giriş</a>
+    <nav class="navbar">
+        <h1 class="logo" onclick="location.href='index.html'">TECH<span>STORE</span></h1>
+        <div id="auth-section">
             </div>
-        </div>
+    </nav>
 
-        <div class="search-container">
-            <h2>Xəyalındakı Kompüteri Tap</h2>
-            <div class="search-box">
-                <input type="number" id="search-id" placeholder="ID ilə axtar (məs: 5)...">
-                <button onclick="handleSearch()">Axtar</button>
-            </div>
-        </div>
-    </header>
+    <header class="hero">
+    <h2>Premium Kompüterlərin Ünvanı</h2>
+    <div class="search-box">
+        <input type="number" id="search-id" placeholder="ID ilə axtar (məs: 5)...">
+        <button onclick="handleSearch()">Axtar</button>
+    </div>
+</header>
 
-    <main>
-        <div id="pc-grid">
-            <div class="loading">Məlumatlar yüklənir...</div>
-        </div>
-    </main>
+    <main id="pc-grid">
+        </main>
 
     <script src="script.js"></script>
 </body>

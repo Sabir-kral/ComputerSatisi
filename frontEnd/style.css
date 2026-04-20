@@ -1,133 +1,145 @@
 :root {
     --bg-dark: #0d1117;
-    --bg-card: #161b22;
+    --card-bg: #161b22;
     --primary-blue: #58a6ff;
-    --text-white: #f0f6fc;
-    --text-gray: #8b949e;
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+    --danger: #f85149;
+    --success: #39d353;
 }
 
 body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
-    padding: 0;
-    background-color: var(--bg-dark);
-    color: var(--text-white);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 50px;
-    background: rgba(22, 27, 34, 0.8);
-    backdrop-filter: blur(10px);
+    padding: 15px 50px;
+    background: var(--card-bg);
+    border-bottom: 1px solid #30363d;
 }
 
-.logo { font-size: 1.5rem; letter-spacing: 2px; }
+.logo { cursor: pointer; letter-spacing: 2px; }
 .logo span { color: var(--primary-blue); }
 
-.btn-login {
-    text-decoration: none;
-    color: var(--text-white);
-    border: 1px solid var(--primary-blue);
-    padding: 8px 20px;
-    border-radius: 5px;
+/* User Nav Styles */
+.user-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 5px 15px;
+    border-radius: 20px;
     transition: 0.3s;
 }
-.btn-login:hover { background: var(--primary-blue); color: #000; }
 
-/* Search Area */
-.search-container {
-    text-align: center;
-    padding: 60px 20px;
-}
+.user-nav:hover { background: #30363d; }
 
-.search-box {
-    margin-top: 20px;
-}
-
-.search-box input {
-    padding: 12px;
-    width: 250px;
-    border-radius: 5px 0 0 5px;
-    border: 1px solid #30363d;
-    background: #0d1117;
-    color: white;
-}
-
-.search-box button {
-    padding: 12px 25px;
-    border-radius: 0 5px 5px 0;
-    border: none;
+.user-icon {
+    width: 35px;
+    height: 35px;
     background: var(--primary-blue);
-    color: #0d1117;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--bg-dark);
     font-weight: bold;
-    cursor: pointer;
 }
 
-/* Grid Sistemi - Əsas Hissə */
-#pc-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
-    padding: 0 50px 50px 50px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* Kart Dizaynı */
-.card {
-    background: var(--bg-card);
-    border: 1px solid #30363d;
-    border-radius: 10px;
-    padding: 20px;
-    transition: 0.3s transform ease;
-}
-
-.card:hover {
-    transform: translateY(-10px);
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
-}
-
-.card h3 { color: var(--primary-blue); margin-top: 0; }
-.card p { color: var(--text-gray); font-size: 0.9rem; }
-.price { font-size: 1.2rem; font-weight: bold; color: #39d353; margin-top: 10px; }
+/* Grid & Cards */
 #pc-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto; /* Ortaya gətirir */
+    gap: 25px;
+    padding: 40px;
 }
 
 .card {
-    background: #161b22;
+    background: var(--card-bg);
     border: 1px solid #30363d;
+    border-radius: 12px;
     padding: 20px;
-    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.card:hover { border-color: var(--primary-blue); transform: translateY(-5px); }
+
+/* Buttons */
+.btn-login { text-decoration: none; color: var(--primary-blue); border: 1px solid var(--primary-blue); padding: 8px 20px; border-radius: 6px; }
+.btn-danger { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+.btn-blue { background: var(--primary-blue); color: var(--bg-dark); border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+
+/* Hero & Search Section */
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(to bottom, #161b22, #0d1117);
+}
+
+.hero h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: var(--text-white);
+}
+
+.search-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0; /* Boşluq olmasın ki, birləşsinlər */
+}
+
+.search-box input {
+    padding: 14px 20px;
+    width: 300px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-right: none; /* Düymə ilə birləşməsi üçün */
+    border-radius: 8px 0 0 8px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 10px rgba(88, 166, 255, 0.1);
+}
+
+.search-box button {
+    padding: 14px 25px;
+    background: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+    border-radius: 0 8px 8px 0;
+    color: var(--bg-dark);
+    font-weight: bold;
+    font-size: 1rem;
     cursor: pointer;
     transition: 0.3s;
 }
 
-.card:hover {
-    border-color: #58a6ff;
-    transform: translateY(-5px);
+.search-box button:hover {
+    background: #4191eb;
+    transform: scale(1.02);
 }
 
-.detail-view {
-    cursor: default;
-    background: #0d1117;
-    border: 2px solid #58a6ff;
-}
-
-.btn-back {
-    background: transparent;
-    color: #58a6ff;
-    border: 1px solid #58a6ff;
-    padding: 5px 15px;
-    cursor: pointer;
-    margin-bottom: 20px;
+/* Kiçik ekranlar üçün düzəliş */
+@media (max-width: 600px) {
+    .search-box {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .search-box input, .search-box button {
+        width: 100%;
+        border-radius: 8px;
+        border-right: 1px solid #30363d;
+    }
 }
