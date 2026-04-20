@@ -40,24 +40,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // ... digər ayarlar
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Hamıya açıq olan OPTIONS sorğuları
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // 2. Giriş və qeydiyyat yolları
                         .requestMatchers("/api/auth/**", "/api/users/**").permitAll()
 
-                        // 3. Kompüter siyahısına baxmaq hamıya açıq olsun
+                        // ANA SƏHİFƏ ÜÇÜN BU İKİ SƏTRİ ƏLAVƏ ET:
                         .requestMatchers(HttpMethod.GET, "/api/computers/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/customers/v2").permitAll()
 
-                        // 4. Swagger sənədləşməsi
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-
-                        // 5. Müştəri profili MÜTLƏQ giriş tələb edir
                         .requestMatchers("/api/customers/profile").authenticated()
-                        .requestMatchers("/api/customers/buy/**").authenticated()
-
-                        // 6. Digər hər şey (məsələn v1/v2 və s.) mütləq login tələb etsin
                         .anyRequest().authenticated()
                 );
 
