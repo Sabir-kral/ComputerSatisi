@@ -28,4 +28,9 @@ public class ComputerController {
     public void delete(@PathVariable Long id){
         computerService.delete(id);
     }
+
+    @GetMapping("/{id}")
+    public ComputerResponse Id(@PathVariable Long id){
+        return computerService.id(id);
+    }
 }

@@ -55,6 +55,10 @@ import java.util.List;
             messageResponse.setMessage("Updated successfully");
             return messageResponse;
         }
+        public ComputerResponse id(Long id){
+            ComputerEntity computer = computerRepo.findById(id).orElseThrow(()->new RuntimeException("Not Found"));
+            return ComputerMapper.toDTO(computer);
+        }
         @Transactional
         public void delete(Long computerId) {
 
