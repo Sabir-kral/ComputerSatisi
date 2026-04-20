@@ -1,4 +1,4 @@
-package az.computer.demo.Entity;
+package az.computer.demo.Entity; // Qeyd: Bu class adətən .config paketində olur, Entity yox
 
 import az.computer.demo.Service.CustomUserDetailsService;
 import az.computer.demo.Utility.JwtFilter;
@@ -22,12 +22,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -41,35 +41,43 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 1. Hamıya açıq olan OPTIONS sorğuları
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Açıq yollar (Frontend üçün)
+                        // 2. Giriş və qeydiyyat yolları
                         .requestMatchers("/api/auth/**", "/api/users/**").permitAll()
-                        .requestMatchers("/api/computers/**").permitAll()
-                        .requestMatchers("/api/customers/**").permitAll() // BU BÜTÜN v1/v2-ləri əhatə edir
 
-                        // Swagger
+                        // 3. Kompüter siyahısına baxmaq hamıya açıq olsun
+                        .requestMatchers(HttpMethod.GET, "/api/computers/**").permitAll()
+
+                        // 4. Swagger sənədləşməsi
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Digər hər şey bağlıdır
+                        // 5. Müştəri profili MÜTLƏQ giriş tələb edir
+                        .requestMatchers("/api/customers/profile").authenticated()
+                        .requestMatchers("/api/customers/buy/**").authenticated()
+
+                        // 6. Digər hər şey (məsələn v1/v2 və s.) mütləq login tələb etsin
                         .anyRequest().authenticated()
                 );
 
+        // Filteri əlavə edirik
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-        config.setExposedHeaders(List.of("Authorization"));
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Həm localhost, həm də CloudShell üçün icazə veririk
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "https://*.cloudshell.dev"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
