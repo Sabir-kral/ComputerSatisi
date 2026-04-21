@@ -1,8 +1,8 @@
-package az.computer.demo.Request;
+    package az.computer.demo.Request;
 
-import lombok.Data;
+    import lombok.Data;
 
-@Data
-public class ResendOtpRequest {
-    private String email;
-}
+    @Data
+    public class ResendOtpRequest {
+        private String email;
+    }

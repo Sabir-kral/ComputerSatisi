@@ -1,97 +1,94 @@
-:root {
-    --primary-blue: #58a6ff;
-    --dark-bg: #0d1117;
-    --card-bg: #161b22;
-    --text-color: #c9d1d9;
-    --white: #ffffff;
+/* Ümumi Konteyner */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 40px 5%;
 }
 
-body {
-    margin: 0;
-    background: var(--dark-bg);
-    color: var(--text-color);
-    font-family: 'Inter', sans-serif;
-}
-
-.hidden { display: none !important; }
-
-/* HEADER DÜZƏLİŞİ */
-.main-header {
-    display: flex; 
-    justify-content: space-between; 
+/* DETAL PƏNCƏRƏSİ (Overlay) */
+.detail-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #0d1117;
+    display: none; /* JS ilə 'flex' olacaq */
+    justify-content: center;
     align-items: center;
-    padding: 15px 5%; 
-    background: rgba(1, 4, 9, 0.95);
-    border-bottom: 1px solid #30363d; 
-    position: sticky; 
-    top: 0; 
-    z-index: 1000;
-    backdrop-filter: blur(10px);
+    z-index: 10000;
+    overflow: hidden;
 }
 
-.logo { font-size: 26px; font-weight: 800; color: var(--white); letter-spacing: 1px; }
-.logo span { color: var(--primary-blue); }
+.detail-overlay.active {
+    display: flex !important;
+}
 
-/* Naviqasiya Linkləri */
-.nav-container {
-    display: flex;
+/* SƏNİN İSTƏDİYİN O LAYOUT (Sol-Sağ) */
+.detail-content {
+    display: flex !important;
+    flex-direction: row !important; /* Mütləq yan-yana */
     align-items: center;
-    gap: 30px; /* Linklər arasındakı məsafə */
+    justify-content: center;
+    width: 90%;
+    max-width: 1100px;
+    gap: 60px;
+    z-index: 20; /* Topların üstündə dursun */
+    color: white;
 }
 
-.nav-link {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1rem;
-    transition: 0.3s;
+.left-side {
+    flex: 1;
+    text-align: center;
 }
 
-.nav-link:hover, .nav-link.active {
-    color: var(--primary-blue);
+.detail-img {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 20px;
+    border: 3px solid #58a6ff;
+    box-shadow: 0 0 30px rgba(88, 166, 255, 0.3);
 }
 
-/* Giriş Butonu */
-.auth-btn {
-    background: var(--primary-blue); 
-    color: white !important; 
-    text-decoration: none;
-    padding: 10px 25px; 
-    border-radius: 8px; 
-    font-weight: 600; 
-    transition: 0.3s;
-    display: inline-block;
+.detail-name {
+    font-size: 2.5rem;
+    margin-top: 20px;
+    color: #58a6ff;
+    text-transform: uppercase;
 }
 
-.auth-btn:hover {
-    box-shadow: 0 0 15px rgba(88, 166, 255, 0.5);
-    transform: translateY(-2px);
+.right-side {
+    flex: 1.2;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 20px;
+    border-left: 6px solid #58a6ff;
 }
 
-/* Avatar Dairəsi */
-.user-profile {
-    width: 42px; height: 42px; 
-    background: linear-gradient(45deg, #1f6feb, #58a6ff);
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    cursor: pointer; font-weight: bold; color: white;
-    box-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+.detail-desc {
+    font-size: 1.2rem;
+    line-height: 1.7;
+    color: #c9d1d9;
 }
 
-/* KOMPÜTERLƏR BAŞLIĞI */
-.section-header { text-align: center; margin: 60px 0 40px; }
-.main-title {
-    font-size: 3.5rem; color: var(--white); text-transform: uppercase;
-    letter-spacing: 4px; background: linear-gradient(to right, #fff, var(--primary-blue));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+/* SQUISHY (ƏZİLƏN) TOPLAR */
+.jelly-ball {
+    position: absolute;
+    background: radial-gradient(circle, rgba(88, 166, 255, 0.25), transparent 70%);
+    border-radius: 50%;
+    z-index: 1;
+    animation: bounce 12s infinite linear, squish 12s infinite linear;
 }
-.title-underline { width: 120px; height: 4px; background: var(--primary-blue); margin: 15px auto; border-radius: 10px; box-shadow: 0 0 15px var(--primary-blue); }
 
-/* GRID & DETAIL ANIMATION (Əvvəlkilər kimi qalır) */
-.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 0 5%; }
-.pc-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 20px; padding: 25px; cursor: pointer; transition: 0.4s; }
-.pc-card:hover { border-color: var(--primary-blue); transform: translateY(-10px); }
+@keyframes bounce {
+    0%, 100% { left: 5%; top: 10%; }
+    25% { left: 85%; top: 75%; }
+    50% { left: 45%; top: 5%; }
+    75% { left: 5%; top: 80%; }
+}
 
-.detail-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 0; height: 0; background: var(--primary-blue); z-index: 10000; opacity: 0; transition: all 0.8s cubic-bezier(0.85, 0, 0.15, 1); display: flex; flex-direction: column; align-items: center; }
-.detail-overlay.active { width: 100vw; height: 100vh; opacity: 1; background: var(--dark-bg); border-radius: 0; }
-.bubble { position: absolute; background: radial-gradient(circle, var(--primary-blue), transparent); border-radius: 50%; animation: bubbleRise 4s infinite ease-in; }
-@keyframes bubbleRise { 0% { transform: translateY(110vh) scale(0.5); opacity: 0; } 100% { transform: translateY(-10vh) scale(1.5); opacity: 0; } }
+@keyframes squish {
+    0%, 100% { transform: scaleX(1.5) scaleY(0.6); } /* Divarda əzilmə */
+    15%, 40%, 65%, 90% { transform: scale(1); }    /* Havada normal */
+    25%, 75% { transform: scaleX(0.6) scaleY(1.5); } /* Yan divarda əzilmə */
+    50% { transform: scaleX(1.5) scaleY(0.7); }    /* Üstdə əzilmə */
+}

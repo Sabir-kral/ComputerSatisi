@@ -26,7 +26,7 @@ function checkAuth() {
 
 async function fetchComputers() {
     try {
-        const res = await fetch(`${API_BASE}/users/computers`);
+        const res = await fetch(`${API_BASE}/customers/v2`);
         const data = await res.json();
         const container = document.getElementById("computer-container");
         
@@ -39,57 +39,46 @@ async function fetchComputers() {
         `).join('');
     } catch (err) { console.error("Xəta:", err); }
 }
-
 async function openDetails(id) {
     const overlay = document.getElementById("detailOverlay");
     const content = document.getElementById("detailContent");
+    
     overlay.classList.add("active");
-    content.innerHTML = "";
+    content.innerHTML = "<h1 style='color:white'>Yüklənir...</h1>";
 
-    try {
-        const res = await fetch(`${API_BASE}/users/computers/${id}`);
-        const pc = await res.json();
-        productImages = pc.imageLinks || [];
-        currentIdx = 0;
+    const res = await fetch(`http://localhost:8080/api/users/computers/${id}`);
+    const pc = await res.json();
+    const mainImg = pc.imageLinks && pc.imageLinks.length > 0 ? pc.imageLinks[0] : 'https://via.placeholder.com/400';
 
-        setTimeout(() => {
-            content.innerHTML = `
-                <button class="back-btn" onclick="closeDetails()" style="margin-bottom:20px; background:transparent; border:2px solid #58a6ff; color:#58a6ff; padding:10px 30px; border-radius:50px; cursor:pointer; font-weight:bold;">← GERİ</button>
-                <div class="slider-container" style="position:relative; width:90%; max-width:800px; height:400px; overflow:hidden; border-radius:20px;">
-                    <div class="slider-wrapper" id="sliderWrapper" style="display:flex; transition:0.6s;">
-                        ${productImages.map(img => `<img src="${img}" style="width:100%; flex-shrink:0; object-fit:cover;">`).join('')}
-                    </div>
-                    ${productImages.length > 1 ? `
-                        <button onclick="moveSlider(-1)" style="position:absolute; left:10px; top:50%; background:rgba(0,0,0,0.5); color:white; border:none; padding:15px; cursor:pointer;">❮</button>
-                        <button onclick="moveSlider(1)" style="position:absolute; right:10px; top:50%; background:rgba(0,0,0,0.5); color:white; border:none; padding:15px; cursor:pointer;">❯</button>
-                    ` : ''}
-                </div>
-                <h1 style="color:#58a6ff; margin-top:20px;">${pc.name}</h1>
+    content.innerHTML = `
+        <div class="left-side">
+            <img src="${mainImg}" class="detail-img">
+            <h1 class="detail-name">${pc.name}</h1>
+        </div>
+        <div class="right-side">
+            <div class="detail-desc">
                 <p>${pc.description}</p>
-                <h2 style="background:rgba(88,166,255,0.1); padding:10px 30px; border-radius:10px;">${pc.price} AZN</h2>
-            `;
-            createBubbles();
-        }, 800);
-    } catch (e) { closeDetails(); }
+            </div>
+            <h2 style="color:#58a6ff; margin-top:20px; font-size:2rem">${pc.price} AZN</h2>
+            <button onclick="closeDetails()" style="margin-top:20px; background:#58a6ff; border:none; color:white; padding:10px 25px; border-radius:5px; cursor:pointer; font-weight:bold;">GERİ</button>
+        </div>
+    `;
+    
+    createJellyBalls();
 }
 
-function moveSlider(step) {
-    const wrapper = document.getElementById("sliderWrapper");
-    currentIdx = (currentIdx + step + productImages.length) % productImages.length;
-    wrapper.style.transform = `translateX(-${currentIdx * 100}%)`;
-}
+function createJellyBalls() {
+    const overlay = document.getElementById("detailOverlay");
+    document.querySelectorAll(".jelly-ball").forEach(b => b.remove());
 
-function closeDetails() { document.getElementById("detailOverlay").classList.remove("active"); }
-
-function createBubbles() {
-    const container = document.getElementById("bubbleContainer");
-    container.innerHTML = "";
-    for (let i = 0; i < 20; i++) {
-        const b = document.createElement("div");
-        b.className = "bubble";
-        b.style.width = b.style.height = Math.random() * 30 + 10 + "px";
-        b.style.left = Math.random() * 100 + "%";
-        b.style.animationDelay = Math.random() * 3 + "s";
-        container.appendChild(b);
+    for (let i = 0; i < 5; i++) {
+        const ball = document.createElement("div");
+        ball.className = "jelly-ball";
+        const size = Math.random() * 120 + 100 + "px";
+        ball.style.width = size;
+        ball.style.height = size;
+        ball.style.animationDuration = (Math.random() * 5 + 10) + "s";
+        ball.style.animationDelay = (Math.random() * 5) + "s";
+        overlay.appendChild(ball);
     }
 }

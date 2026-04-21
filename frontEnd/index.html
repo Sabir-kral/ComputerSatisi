@@ -3,37 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Premium</title>
-    <link rel="stylesheet" href="style.css">
+    <title>TechStore | Squishy Edition</title>
+    <style>
+        :root {
+            --primary-blue: #58a6ff;
+            --dark-bg: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+        }
+
+        body {
+            margin: 0; background: var(--dark-bg);
+            color: var(--text-color); font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 5%; background: rgba(1, 4, 9, 0.95);
+            border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 1000;
+        }
+
+        .logo { font-size: 24px; font-weight: bold; color: white; }
+        .logo span { color: var(--primary-blue); }
+
+        /* GRID */
+        .grid-container {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px; padding: 40px 5%;
+        }
+
+        .pc-card {
+            background: var(--card-bg); border: 1px solid #30363d;
+            padding: 20px; border-radius: 15px; cursor: pointer; transition: 0.3s;
+        }
+
+        .pc-card:hover { border-color: var(--primary-blue); transform: translateY(-5px); }
+
+        /* DETAL OVERLAY */
+        .detail-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #0d1117; display: none; z-index: 9999; overflow: hidden;
+        }
+
+        .detail-overlay.active { display: flex !important; justify-content: center; align-items: center; }
+
+        /* SƏNİN İSTƏDİYİN LAYOUT: SOLDADA ŞƏKİL/AD, SAĞDA DESC */
+        .detail-content {
+            display: flex !important; flex-direction: row !important;
+            width: 85%; max-width: 1100px; gap: 50px; z-index: 100; align-items: center;
+        }
+
+        .left-side { flex: 1; text-align: center; }
+        .right-side { flex: 1.2; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border-left: 5px solid var(--primary-blue); }
+
+        .detail-img { width: 100%; max-width: 400px; border-radius: 15px; border: 3px solid var(--primary-blue); }
+        .detail-name { font-size: 2.5rem; color: white; margin-top: 15px; text-transform: uppercase; }
+        .detail-desc { font-size: 1.1rem; line-height: 1.6; color: #c9d1d9; }
+        .detail-price { font-size: 2rem; color: var(--primary-blue); margin-top: 20px; }
+
+        /* SQUISHY JELLY BALLS */
+        .jelly-ball {
+            position: absolute;
+            background: radial-gradient(circle, rgba(88, 166, 255, 0.2), transparent 70%);
+            border-radius: 50%; z-index: 1;
+            animation: bounce 12s infinite linear, squish 12s infinite linear;
+        }
+
+        @keyframes bounce {
+            0%, 100% { left: 0%; top: 10%; }
+            25% { left: 80%; top: 70%; }
+            50% { left: 40%; top: 0%; }
+            75% { left: 0%; top: 80%; }
+        }
+
+        @keyframes squish {
+            0%, 100% { transform: scaleX(1.4) scaleY(0.6); }
+            20%, 40%, 60%, 80% { transform: scale(1); }
+            25%, 75% { transform: scaleX(0.6) scaleY(1.4); }
+            50% { transform: scaleX(1.3) scaleY(0.7); }
+        }
+
+        .back-btn {
+            background: var(--primary-blue); border: none; color: white;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 
     <header class="main-header">
         <div class="logo">TECH<span>STORE</span></div>
-        <nav class="nav-container">
-            <a href="index.html" class="nav-link active">Kompüterlər</a>
-            
-            <a href="login.html" id="loginBtn" class="auth-btn">Giriş</a>
-            
-            <div id="userProfile" class="user-profile hidden" onclick="window.location.href='profile.html'">
-                <span id="userInitial"></span>
-            </div>
-        </nav>
     </header>
 
-    <main class="container">
-        <div class="section-header">
-            <h1 class="main-title">Premium Kompüterlər</h1>
-            <div class="title-underline"></div>
+    <div id="computer-container" class="grid-container">
         </div>
-        <div id="computer-container" class="grid-container"></div>
-    </main>
 
     <div id="detailOverlay" class="detail-overlay">
-        <div id="bubbleContainer" class="bubble-container"></div>
         <div id="detailContent" class="detail-content"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const API_BASE = "http://localhost:8080/api";
+
+        async function fetchComputers() {
+            try {
+                const res = await fetch(`${API_BASE}/users/computers`);
+                const data = await res.json();
+                const container = document.getElementById("computer-container");
+                container.innerHTML = data.map(pc => `
+                    <div class="pc-card" onclick="openDetails(${pc.id})">
+                        <h3>${pc.name}</h3>
+                        <p>${pc.price} AZN</p>
+                    </div>
+                `).join('');
+            } catch (e) { console.log("Backend işləmir!"); }
+        }
+
+        async function openDetails(id) {
+            const overlay = document.getElementById("detailOverlay");
+            const content = document.getElementById("detailContent");
+            overlay.classList.add("active");
+            content.innerHTML = "<h2 style='color:white'>Yüklənir...</h2>";
+
+            const res = await fetch(`${API_BASE}/users/computers/${id}`);
+            const pc = await res.json();
+            const img = pc.imageLinks?.[0] || 'https://via.placeholder.com/400';
+
+            content.innerHTML = `
+                <div class="left-side">
+                    <img src="${img}" class="detail-img">
+                    <h1 class="detail-name">${pc.name}</h1>
+                </div>
+                <div class="right-side">
+                    <p class="detail-desc">${pc.description}</p>
+                    <div class="detail-price">${pc.price} AZN</div>
+                    <button class="back-btn" onclick="closeDetails()">GERİ QAYIT</button>
+                </div>
+            `;
+            createBalls();
+        }
+
+        function createBalls() {
+            const overlay = document.getElementById("detailOverlay");
+            document.querySelectorAll(".jelly-ball").forEach(b => b.remove());
+            for (let i = 0; i < 6; i++) {
+                const ball = document.createElement("div");
+                ball.className = "jelly-ball";
+                const size = Math.random() * 100 + 100 + "px";
+                ball.style.width = ball.style.height = size;
+                ball.style.animationDuration = (Math.random() * 4 + 8) + "s";
+                ball.style.animationDelay = (Math.random() * 5) + "s";
+                overlay.appendChild(ball);
+            }
+        }
+
+        function closeDetails() { document.getElementById("detailOverlay").classList.remove("active"); }
+
+        window.onload = fetchComputers;
+    </script>
 </body>
 </html>
