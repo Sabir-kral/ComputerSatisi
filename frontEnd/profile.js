@@ -60,5 +60,50 @@ function logout() {
     localStorage.clear();
     location.href = 'index.html';
 }
+async function getMyComputers() {
+    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    const area = document.getElementById("my-computers-area");
+    const container = document.getElementById("pc-list-content");
+
+    // Əvvəlcə yeri göstər
+    area.style.display = "block";
+    container.innerHTML = "<p style='color:white'>Yüklənir...</p>";
+
+    try {
+        const res = await fetch('http://localhost:8080/api/customers/v1', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (res.ok) {
+            const computers = await res.json();
+            
+            if (computers.length === 0) {
+                container.innerHTML = "<p>Sizin hələ ki, heç bir kompüteriniz yoxdur.</p>";
+                return;
+            }
+
+            // Məlumatları HTML-ə doldur
+            container.innerHTML = computers.map(pc => `
+                <div class="pc-list-item">
+                    <h4>${pc.name}</h4>
+                    <p>${pc.description}</p>
+                    <p class="pc-price">${pc.price} AZN</p>
+                </div>
+            `).join('');
+            
+            // Səhifəni aşağıya doğru sürüşdür ki, siyahı görünsün
+            area.scrollIntoView({ behavior: 'smooth' });
+
+        } else {
+            container.innerHTML = "<p style='color:red'>Məlumatlar gətirilərkən xəta baş verdi.</p>";
+        }
+    } catch (err) {
+        container.innerHTML = "<p style='color:red'>Serverlə bağlantı kəsildi.</p>";
+    }
+}
+
 
 loadProfile();
