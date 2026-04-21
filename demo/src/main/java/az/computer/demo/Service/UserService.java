@@ -89,7 +89,7 @@ public class UserService {
 
         mailService.verifyEmail(request.getEmail(), code);
         // ... qalan kodlar
-    
+
 
         MessageResponse response = new MessageResponse();
         response.setMessage("OTP resend olundu");

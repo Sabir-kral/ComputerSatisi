@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -29,4 +30,7 @@ public class ComputerEntity {
 
     @ManyToMany(mappedBy = "boughtComputers")
     private List<CustomerEntity> buyers;
+
+    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImageEntity> images = new ArrayList<>(); // Bunu mütləq belə yaz!
 }

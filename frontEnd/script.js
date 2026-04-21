@@ -1,123 +1,95 @@
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = "http://localhost:8080/api";
+let currentIdx = 0;
+let productImages = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuth();
+    fetchComputers();
+});
 
 function checkAuth() {
-    const authSection = document.getElementById('auth-section');
-    const token = localStorage.getItem('accessToken');
-    const email = localStorage.getItem('userEmail');
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+    const loginBtn = document.getElementById("loginBtn");
+    const userProfile = document.getElementById("userProfile");
+    const userInitial = document.getElementById("userInitial");
 
     if (token && email) {
-        authSection.innerHTML = `
-            <div class="user-nav" onclick="location.href='profile.html'">
-                <span>${email.split('@')[0]}</span>
-                <div class="user-icon">${email[0].toUpperCase()}</div>
-            </div>
-        `;
+        if(loginBtn) loginBtn.classList.add("hidden");
+        userProfile.classList.remove("hidden");
+        userInitial.innerText = email.charAt(0).toUpperCase();
     } else {
-        authSection.innerHTML = `<a href="login.html" class="btn-login">Giriş</a>`;
+        if(loginBtn) loginBtn.classList.remove("hidden");
+        userProfile.classList.add("hidden");
     }
 }
 
-const PC_CONTAINER = document.getElementById('pc-grid');
-
-// 1. Kartları ekrana çıxaran funksiya
-async function getComputers() {
+async function fetchComputers() {
     try {
-        const response = await fetch(`${API_BASE}/customers/v2`);
-        if (!response.ok) throw new Error("Məlumat gəlmədi");
+        const res = await fetch(`${API_BASE}/users/computers`);
+        const data = await res.json();
+        const container = document.getElementById("computer-container");
         
-        const data = await response.json();
-        const container = document.getElementById('pc-grid');
-        container.innerHTML = ''; 
-
-        data.forEach(pc => {
-            // Əgər pc obyekti gəlirsə amma içində xəta varsa belə, kartı yaratmağa çalış
-            try {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => findComputerById(pc.id);
-                
-                card.innerHTML = `
-                    <div class="card-badge">ID: ${pc.id}</div>
-                    <h3>${pc.name || 'Adsız Kompüter'}</h3>
-                    <p>${pc.description || 'Təsvir yoxdur'}</p>
-                    <div class="price">${pc.price} AZN</div>
-                    <small style="color:var(--text-dim)">Satıcı: ${pc.user ? pc.user.name : 'Sistem'}</small>
-                `;
-                container.appendChild(card);
-            } catch (innerErr) {
-                console.error("Tək bir kart yaradılarkən xəta:", innerErr);
-            }
-        });
-    } catch (err) {
-        console.error("Ümumi yükləmə xətası:", err);
-    }
+        container.innerHTML = data.map(pc => `
+            <div class="pc-card" onclick="openDetails(${pc.id})">
+                <h2 style="color:white; margin:0">${pc.name}</h2>
+                <div style="height:2px; width:40px; background:var(--primary-blue); margin:10px 0"></div>
+                <p style="color:var(--primary-blue); font-size:1.4rem; font-weight:bold">${pc.price} AZN</p>
+            </div>
+        `).join('');
+    } catch (err) { console.error("Xəta:", err); }
 }
 
-// 2. ID ilə axtarış funksiyası
-async function findComputerById(id) {
-    console.log("Klikləndi! Axtarılan ID:", id); // Bunu görməlisən!
-    const token = localStorage.getItem('accessToken');
-
-    if (!token) {
-        alert("Bu kompüterin detallarına baxmaq üçün əvvəlcə giriş edin!");
-        window.location.href = "login.html";
-        return;
-    }
+async function openDetails(id) {
+    const overlay = document.getElementById("detailOverlay");
+    const content = document.getElementById("detailContent");
+    overlay.classList.add("active");
+    content.innerHTML = "";
 
     try {
-        const response = await fetch(`${API_BASE}/computers/${id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${API_BASE}/users/computers/${id}`);
+        const pc = await res.json();
+        productImages = pc.imageLinks || [];
+        currentIdx = 0;
 
-        if (!response.ok) throw new Error('Kompüter tapılmadı və ya icazə yoxdur.');
-
-        const pc = await response.json();
-        
-        // Detallı görünüşü göstər
-        PC_CONTAINER.innerHTML = `
-            <div class="card detail-view" style="grid-column: 1/-1;">
-                <button class="btn-blue" onclick="getComputers()">← Geri qayıt</button>
-                <div style="margin-top:20px">
-                    <h2>${pc.name}</h2>
-                    <p>${pc.description}</p>
-                    <div class="price">${pc.price} AZN</div>
-                    <button class="btn-blue" style="margin-top:15px; background:var(--success)">İndi Al</button>
+        setTimeout(() => {
+            content.innerHTML = `
+                <button class="back-btn" onclick="closeDetails()" style="margin-bottom:20px; background:transparent; border:2px solid #58a6ff; color:#58a6ff; padding:10px 30px; border-radius:50px; cursor:pointer; font-weight:bold;">← GERİ</button>
+                <div class="slider-container" style="position:relative; width:90%; max-width:800px; height:400px; overflow:hidden; border-radius:20px;">
+                    <div class="slider-wrapper" id="sliderWrapper" style="display:flex; transition:0.6s;">
+                        ${productImages.map(img => `<img src="${img}" style="width:100%; flex-shrink:0; object-fit:cover;">`).join('')}
+                    </div>
+                    ${productImages.length > 1 ? `
+                        <button onclick="moveSlider(-1)" style="position:absolute; left:10px; top:50%; background:rgba(0,0,0,0.5); color:white; border:none; padding:15px; cursor:pointer;">❮</button>
+                        <button onclick="moveSlider(1)" style="position:absolute; right:10px; top:50%; background:rgba(0,0,0,0.5); color:white; border:none; padding:15px; cursor:pointer;">❯</button>
+                    ` : ''}
                 </div>
-            </div>
-        `;
-    } catch (err) {
-        alert(err.message);
-    }
+                <h1 style="color:#58a6ff; margin-top:20px;">${pc.name}</h1>
+                <p>${pc.description}</p>
+                <h2 style="background:rgba(88,166,255,0.1); padding:10px 30px; border-radius:10px;">${pc.price} AZN</h2>
+            `;
+            createBubbles();
+        }, 800);
+    } catch (e) { closeDetails(); }
 }
 
-// 3. Axtarış düyməsi üçün funksiya
-function handleSearch() {
-    const idValue = document.getElementById('search-id').value;
-    if (idValue) {
-        findComputerById(idValue);
-    } else {
-        getComputers();
-    }
+function moveSlider(step) {
+    const wrapper = document.getElementById("sliderWrapper");
+    currentIdx = (currentIdx + step + productImages.length) % productImages.length;
+    wrapper.style.transform = `translateX(-${currentIdx * 100}%)`;
 }
 
-// Səhifə açılanda işlət
-getComputers();
-checkAuth(); // Navbar yoxlanışı
+function closeDetails() { document.getElementById("detailOverlay").classList.remove("active"); }
 
-
-// Detal görünüşü üçün köməkçi funksiya
-function renderDetailView(pc) {
-    const container = document.getElementById('pc-grid');
-    container.innerHTML = `
-        <div class="card detail-view" style="grid-column: 1/-1; border: 2px solid var(--primary-blue);">
-            <button class="btn-blue" onclick="getComputers()">← Geri qayıt</button>
-            <div style="margin-top: 20px;">
-                <h2>${pc.name}</h2>
-                <p>${pc.description || 'Məlumat yoxdur'}</p>
-                <div class="price" style="font-size: 1.5rem; color: var(--success);">${pc.price} AZN</div>
-                <br>
-                <button class="btn-blue" style="background:#49fb35">İndi Al</button>
-            </div>
-        </div>
-    `;
+function createBubbles() {
+    const container = document.getElementById("bubbleContainer");
+    container.innerHTML = "";
+    for (let i = 0; i < 20; i++) {
+        const b = document.createElement("div");
+        b.className = "bubble";
+        b.style.width = b.style.height = Math.random() * 30 + 10 + "px";
+        b.style.left = Math.random() * 100 + "%";
+        b.style.animationDelay = Math.random() * 3 + "s";
+        container.appendChild(b);
+    }
 }

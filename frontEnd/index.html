@@ -2,26 +2,37 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore | Ana Səhifə</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore | Premium</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <h1 class="logo" onclick="location.href='index.html'">TECH<span>STORE</span></h1>
-        <div id="auth-section">
+
+    <header class="main-header">
+        <div class="logo">TECH<span>STORE</span></div>
+        <nav class="nav-container">
+            <a href="index.html" class="nav-link active">Kompüterlər</a>
+            
+            <a href="login.html" id="loginBtn" class="auth-btn">Giriş</a>
+            
+            <div id="userProfile" class="user-profile hidden" onclick="window.location.href='profile.html'">
+                <span id="userInitial"></span>
             </div>
-    </nav>
+        </nav>
+    </header>
 
-    <header class="hero">
-    <h2>Premium Kompüterlərin Ünvanı</h2>
-    <div class="search-box">
-        <input type="number" id="search-id" placeholder="ID ilə axtar (məs: 5)...">
-        <button onclick="handleSearch()">Axtar</button>
+    <main class="container">
+        <div class="section-header">
+            <h1 class="main-title">Premium Kompüterlər</h1>
+            <div class="title-underline"></div>
+        </div>
+        <div id="computer-container" class="grid-container"></div>
+    </main>
+
+    <div id="detailOverlay" class="detail-overlay">
+        <div id="bubbleContainer" class="bubble-container"></div>
+        <div id="detailContent" class="detail-content"></div>
     </div>
-</header>
-
-    <main id="pc-grid">
-        </main>
 
     <script src="script.js"></script>
 </body>

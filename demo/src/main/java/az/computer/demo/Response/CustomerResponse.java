@@ -1,16 +1,14 @@
 package az.computer.demo.Response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CustomerResponse {
     private Long id;
     private String name;
     private String surname;
     private String email;
-    private String password;
+    private List<ComputerResponse> sellingComputers; // Satdığı kompüterlər
+    private List<ComputerResponse> boughtComputers;  // Aldığı kompüterlər
 }

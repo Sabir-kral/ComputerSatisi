@@ -22,7 +22,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,12 +39,10 @@ public class CustomerService {
     public MessageResponse register(CustomerRequest request) throws MessagingException {
         userService.isUserExists(request.getEmail());
 
-
         UserEntity user = new UserEntity();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setIsVerified(false);
-
 
         CustomerEntity customer = new CustomerEntity();
         customer.setName(request.getName());
@@ -56,15 +53,9 @@ public class CustomerService {
         customer.setBoughtComputers(new ArrayList<>());
         customer.setUser(user);
 
-
-
-
         userRepo.save(user);
         roleRepo.assignCustomerRoles(user.getId());
-
         customerRepo.save(customer);
-
-
 
         String code = generateCode();
         EmailVerificationEntity entity = new EmailVerificationEntity();
@@ -86,72 +77,69 @@ public class CustomerService {
 
     public CustomerResponse profile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        CustomerEntity student = customerRepo.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("Student not found with email: " + username));
-        return CustomerMapper.toDTO(student);
+        CustomerEntity customer = customerRepo.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Customer not found: " + username));
+
+        CustomerResponse dto = CustomerMapper.toDTO(customer);
+        // Satdığı kompüterləri göstəririk
+        dto.setSellingComputers(ComputerMapper.toDTOList(customer.getSellingComputers()));
+        return dto;
     }
 
     @Transactional
     public MessageResponse buyComputer(Long computerId) {
-        // 1. Alıcını tapırıq
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         CustomerEntity buyer = customerRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        // 2. Kompüteri tapırıq
         ComputerEntity computer = computerRepo.findById(computerId)
                 .orElseThrow(() -> new RuntimeException("Computer not found"));
 
-        // 3. Təhlükəsizlik yoxlaması: Alıcı bu kompüteri artıq alıbmı?
         if (buyer.getBoughtComputers().contains(computer)) {
             throw new RuntimeException("Siz bu kompüteri artıq almısınız.");
         }
 
-        // 4. ƏSAS MƏNTİQ: Bu kompüteri satan hər kəsin siyahısından onu silirik
-        // ManyToMany olduğu üçün 'sellers' siyahısını döngü ilə təmizləyirik
         if (computer.getSellers() != null && !computer.getSellers().isEmpty()) {
             for (CustomerEntity seller : computer.getSellers()) {
                 seller.getSellingComputers().remove(computer);
-                // Satıcıları yadda saxlayırıq ki, əlaqə cədvəli (customer_computers) yenilənsin
                 customerRepo.save(seller);
             }
         }
 
-        // 5. Kompüteri alıcının 'boughtComputers' siyahısına əlavə edirik
         buyer.getBoughtComputers().add(computer);
         customerRepo.save(buyer);
 
-        // 6. Loq və Cavab
         MessageResponse response = new MessageResponse();
-        response.setMessage("Computer bought successfully and removed from all selling lists.");
+        response.setMessage("Computer bought successfully");
         logService.add("Customer " + buyer.getEmail() + " bought PC ID: " + computerId, "CUSTOMER_BOUGHT");
-
         return response;
     }
 
-
-
+    @Transactional
     public MessageResponse updateCustomerProfile(CustomerRequest request, String email) {
         CustomerEntity customer = customerRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         UserEntity userEntity = customer.getUser();
-
 
         customer.setName(request.getName());
         customer.setSurname(request.getSurname());
         customer.setEmail(request.getEmail());
-        customer.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setEmail(request.getEmail());
-        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        if(request.getPassword() != null && !request.getPassword().isEmpty()){
+            String encodedPass = passwordEncoder.encode(request.getPassword());
+            customer.setPassword(encodedPass);
+            userEntity.setPassword(encodedPass);
+        }
+
+        userEntity.setEmail(request.getEmail());
 
         customerRepo.save(customer);
         userRepo.save(userEntity);
+
         MessageResponse messageResponse = new MessageResponse();
         messageResponse.setMessage("Customer Updated");
         logService.add("Customer updated with email: "+customer.getEmail(),"CUSTOMER_UPDATED");
-
         return messageResponse;
     }
 
@@ -165,42 +153,30 @@ public class CustomerService {
         return codeBuilder.toString();
     }
 
-
-
     @Transactional
     public void delete() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         CustomerEntity customer = customerRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer Not Found"));
 
-
         UserEntity user = customer.getUser();
-
         roleRepo.deleteByUserId(user.getId());
-
         customerRepo.delete(customer);
-
         userRepo.delete(user);
         logService.add("Customer deleted with email: "+user.getEmail(),"CUSTOMER_DELETED");
-
     }
+
     public List<ComputerResponse> getAllBought(){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         CustomerEntity customer = customerRepo.findByEmail(email).orElseThrow(()->new RuntimeException("Not Found"));
-        logService.add("Customer gotAllBought pc with email: "+customer.getEmail(),"CUSTOMER_GET");
         return ComputerMapper.toDTOList(customer.getBoughtComputers());
-
-
     }
+
     public List<ComputerResponse> getAll() {
         List<ComputerEntity> allComputers = computerRepo.findAll();
-
-        // Yalnız satıcısı olan (yəni hələ də satışda olan) kompüterləri göstər
         List<ComputerEntity> availableComputers = allComputers.stream()
                 .filter(c -> c.getSellers() != null && !c.getSellers().isEmpty())
                 .toList();
-
         return ComputerMapper.toDTOList(availableComputers);
     }
-
 }
